@@ -1,5 +1,6 @@
 ########## SITEWIDE CONSTANTS ############
-animation = ["[■□□□□□□□□□]","[■■□□□□□□□□]", "[■■■□□□□□□□]", "[■■■■□□□□□□]", "[■■■■□□□□□□]", "[■■■■■□□□□□]", "[■■■■■■□□□□]", "[■■■■■■■□□□]", "[■■■■■■■■□□]", "[■■■■■■■■■□]", "[■■■■■■■■■□]", "[■■■■■■■■■■]"]
+animation = ["[■□□□□□□□□□]", "[■■□□□□□□□□]", "[■■■□□□□□□□]", "[■■■■□□□□□□]", "[■■■■□□□□□□]", "[■■■■■□□□□□]",
+             "[■■■■■■□□□□]", "[■■■■■■■□□□]", "[■■■■■■■■□□]", "[■■■■■■■■■□]", "[■■■■■■■■■□]", "[■■■■■■■■■■]"]
 
 LEARNVIR = 'https://udemycoupon.learnviral.com/coupon-category/free100-discount/page/'
 REALDISC = 'https://www.real.discount/new/page/'
@@ -18,13 +19,15 @@ FREE_ENROLL1 = 'https://www.udemy.com/api-2.0/users/me/subscribed-courses/?field
 total_sites = [
     'Discudemy',
     'Udemy Freebies',
-    'Udemy Coupons',
-    'Real Discount',
-    'Tricks Info',
-    'Free Web Cart',
+    #'Udemy Coupons',
+    #'Real Discount',
+    #'Tricks Info',
+    #'Free Web Cart',
     'Course Mania',
-    'Jojo Coupons',
+    #'Jojo Coupons',
     "Online Tutorials"
 ]
 
-site_range = [10, 12, 6, 10, 6, 7, 2, 4, 4]
+site_range = [10, 12,  # 6, 10, 6, 7,
+              2,  # 4,
+              4]

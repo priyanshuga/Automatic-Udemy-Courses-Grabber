@@ -17,40 +17,46 @@ from urllib.parse import urlsplit, parse_qs
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 func_list = [
-    lambda page : discudemy(page),
-    lambda page : udemy_freebies(page),
-    lambda page : udemy_coupons_me(page),
-    lambda page : real_disc(page),
-    lambda page : tricksinfo(page),
-    lambda page : freewebcart(page),
-    lambda page : course_mania(page),
-    lambda page : jojocoupons(page),
-    lambda page : onlinetutorials(page),
+    lambda page: discudemy(page),
+    lambda page: udemy_freebies(page),
+    #lambda page: udemy_coupons_me(page),
+    #lambda page: real_disc(page),
+    #lambda page: tricksinfo(page),
+    #lambda page: freewebcart(page),
+    lambda page: course_mania(page),
+    #lambda page: jojocoupons(page),
+    lambda page: onlinetutorials(page),
 ]
+
 
 def cookiejar(client_id, access_token):
     cookies = dict(client_id=client_id, access_token=access_token)
     return cookies
 
+
 def getRealUrl(url):
     path = url.split(".com/")[1]
     return "https://www.udemy.com/" + path
+
 
 def get_course_id(url, cookies):
     global purchased_text
     r2 = requests.get(url, verify=False, cookies=cookies)
     soup = BeautifulSoup(r2.content, 'html.parser')
     try:
-        purchased_text = soup.find('div', class_ = 'purchase-text').text.replace("\n","")
+        purchased_text = soup.find(
+            'div', class_='purchase-text').text.replace("\n", "")
     except:
         purchased_text = ''
     try:
-        courseid = soup.find('body', attrs = {'id': 'udemy'})['data-clp-course-id']
+        courseid = soup.find('body', attrs={'id': 'udemy'})[
+            'data-clp-course-id']
     except:
         try:
             courseid = j[1]['sku'].replace('course:', '')
         except:
-            soupx = soup.find('div', class_ = 'ud-component--course-landing-page-udlite--buy-button-cacheable')
+            soupx = soup.find(
+                'div', class_='ud-component--course-landing-page-udlite--buy-button-cacheable')
             if soupx != None:
                 likk = soupx.find('a')['href']
                 courseid = int(re.search(r'\d+', likk).group(0))
@@ -68,18 +74,25 @@ def get_course_coupon(url):
     except:
         return ''
 
-def free_checkout(CHECKOUT, access_token, csrftoken, coupon, courseID, cookies, head):
-    payload = '{"shopping_cart":{"items":[{"buyableType":"course","buyableId":' + str(courseID) + ',"discountInfo":{"code":"' + coupon + '"},"purchasePrice":{"currency":"INR","currency_symbol":"","amount":0,"price_string":"Free"},"buyableContext":{"contentLocaleId":null}}]},"payment_info":{"payment_vendor":"Free","payment_method":"free-method"}}'
 
-    r = requests.post(CHECKOUT, headers=head, data=payload, cookies=cookies, verify=False)
+def free_checkout(CHECKOUT, access_token, csrftoken, coupon, courseID, cookies, head):
+    payload = '{"shopping_cart":{"items":[{"buyableType":"course","buyableId":' + str(
+        courseID) + ',"discountInfo":{"code":"' + coupon + '"},"purchasePrice":{"currency":"INR","currency_symbol":"","amount":0,"price_string":"Free"},"buyableContext":{"contentLocaleId":null}}]},"payment_info":{"payment_vendor":"Free","payment_method":"free-method"}}'
+
+    r = requests.post(CHECKOUT, headers=head, data=payload,
+                      cookies=cookies, verify=False)
     return r.json()
+
 
 def free_enroll(courseID, access_token, cookies, csrftoken, head):
 
-    r = requests.get('https://www.udemy.com/course/subscribe/?courseId=' + str(courseID), headers=head, verify=False, cookies=cookies)
-    
-    r2 = requests.get('https://www.udemy.com/api-2.0/users/me/subscribed-courses/' + str(courseID) + '/?fields%5Bcourse%5D=%40default%2Cbuyable_object_type%2Cprimary_subcategory%2Cis_private', headers=head, verify=False, cookies=cookies)
+    r = requests.get('https://www.udemy.com/course/subscribe/?courseId=' +
+                     str(courseID), headers=head, verify=False, cookies=cookies)
+
+    r2 = requests.get('https://www.udemy.com/api-2.0/users/me/subscribed-courses/' + str(courseID) +
+                      '/?fields%5Bcourse%5D=%40default%2Cbuyable_object_type%2Cprimary_subcategory%2Cis_private', headers=head, verify=False, cookies=cookies)
     return r2.json()
+
 
 def auto_add(list_st, cookies, access_token, csrftoken, head):
     print('\n')
@@ -87,7 +100,8 @@ def auto_add(list_st, cookies, access_token, csrftoken, head):
     global count, paid_only
     while index <= len(list_st) - 1:
         sp1 = list_st[index].split('||')
-        print(fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fr + str(index + 1), fy + sp1[0], end='')
+        print(fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' +
+              fr + str(index + 1), fy + sp1[0] + ": ", end='')
 
         link = getRealUrl(sp1[1])
         print(link)
@@ -97,7 +111,8 @@ def auto_add(list_st, cookies, access_token, csrftoken, head):
         if couponID != '' and purchased_text == '':
             slp = ''
             try:
-                js = free_checkout(CHECKOUT, access_token, csrftoken, couponID, course_id, cookies, head)
+                js = free_checkout(CHECKOUT, access_token,
+                                   csrftoken, couponID, course_id, cookies, head)
 
                 try:
                     if js['status'] == 'succeeded':
@@ -124,14 +139,16 @@ def auto_add(list_st, cookies, access_token, csrftoken, head):
                 pass
             if slp != '':
                 slp += 10
-                print(fc + sd + '----' + fm + sb + '>>' +  fb + ' Pausing execution of script for ' + fr + str(slp) + ' seconds')
+                print(fc + sd + '----' + fm + sb + '>>' + fb +
+                      ' Pausing execution of script for ' + fr + str(slp) + ' seconds')
                 time.sleep(slp)
             else:
                 time.sleep(5)
 
         elif couponID == '' and purchased_text == '':
             if paid_only == False:
-                js = free_enroll(course_id, access_token, cookies, csrftoken, head)
+                js = free_enroll(course_id, access_token,
+                                 cookies, csrftoken, head)
                 try:
                     if js['_class'] == 'course':
                         print(fg + ' Successfully Subscribed')
@@ -146,24 +163,30 @@ def auto_add(list_st, cookies, access_token, csrftoken, head):
         else:
             print(' ' + fc + purchased_text)
             index += 1
-    print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + bc + fw + sb + 'Total Courses Subscribed: ' + str(count))
+    print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' +
+          bc + fw + sb + 'Total Courses Subscribed: ' + str(count))
+
 
 def process(list_st, dd, limit, site_index, cookies, access_token, csrftoken, head):
     global d
     print('\n')
     for index, stru in enumerate(list_st, start=1):
         sp1 = stru.split('||')
-        print(fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fr + str(index), fy + sp1[0])
-    print('\n' + fc + sd + '----' + fm + sb + '>>' + fb + ' To load more input "m" OR to subscribe any course from above input "y": ', end='')
+        print(fc + sd + '[' + fm + sb + '*' + fc +
+              sd + '] ' + fr + str(index), fy + sp1[0])
+    print('\n' + fc + sd + '----' + fm + sb + '>>' + fb +
+          ' To load more input "m" OR to subscribe any course from above input "y": ', end='')
     input_2 = input()
     if input_2 == 'm':
         if dd != limit-1:
             return total_sites[site_index + 1]
     elif input_2 == 'y':
         try:
-            subs = int(input('\n---->> Enter id of course ex - 1 or 2 or 3.... : '))
+            subs = int(
+                input('\n---->> Enter id of course ex - 1 or 2 or 3.... : '))
         except Exception as e:
-            print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fr + 'Enter Correct ID')
+            print('\n' + fc + sd + '[' + fm + sb + '*' +
+                  fc + sd + '] ' + fr + 'Enter Correct ID')
             subs = ''
         # print(type(subs))
         if isinstance(subs, int):
@@ -171,78 +194,89 @@ def process(list_st, dd, limit, site_index, cookies, access_token, csrftoken, he
             couponID = get_course_coupon(link)
             course_id = get_course_id(link, cookies)
             if couponID != '' and purchased_text == '':
-                js = free_checkout(CHECKOUT, access_token, csrftoken, couponID, course_id, cookies, head)
+                js = free_checkout(CHECKOUT, access_token,
+                                   csrftoken, couponID, course_id, cookies, head)
                 try:
                     if js['status'] == 'succeeded':
-                        print(fc + sd + '[' + fm + sb + '*' + fc + sd + '][' + fm + sb + '*' + fc + sd + ']' + fg + ' Successfully Enrolled To Course')
+                        print(fc + sd + '[' + fm + sb + '*' + fc + sd + '][' + fm + sb +
+                              '*' + fc + sd + ']' + fg + ' Successfully Enrolled To Course')
                 except:
                     print(js['message'])
             elif couponID == '' and purchased_text == '':
-                js = free_enroll(course_id, access_token, cookies, csrftoken, head)
+                js = free_enroll(course_id, access_token,
+                                 cookies, csrftoken, head)
                 try:
                     if js['_class'] == 'course':
-                        print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '][' + fm + sb + '*' + fc + sd + ']' + fg + ' Successfully Subscribed')
+                        print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '][' +
+                              fm + sb + '*' + fc + sd + ']' + fg + ' Successfully Subscribed')
                 except:
-                    print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + ']' + fr + ' COUPON MIGHT HAVE EXPIRED')
+                    print('\n' + fc + sd + '[' + fm + sb + '*' + fc +
+                          sd + ']' + fr + ' COUPON MIGHT HAVE EXPIRED')
             else:
-                print(fc + sd + '[' + fm + sb + '*' + fc + sd + '][' + fm + sb + '*' + fc + sd + ']' + fc + purchased_text)
+                print(fc + sd + '[' + fm + sb + '*' + fc + sd + '][' +
+                      fm + sb + '*' + fc + sd + ']' + fc + purchased_text)
         d = dd - 1
     else:
         exit()
+
 
 def fetch_cookies():
     try:
         cookies = browser_cookie3.load(domain_name='www.udemy.com')
         return requests.utils.dict_from_cookiejar(cookies), cookies
     except:
-        print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fr + 'Auto login failed!!, try by adding cookie file using "py udemy.py -c cookie_file.txt"')
+        print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fr +
+              'Auto login failed!!, try by adding cookie file using "py udemy.py -c cookie_file.txt"')
         exit()
+
 
 def main():
     sys.stdout.write(banner())
     version = '1.0'
-    parser = argparse.ArgumentParser(description='', conflict_handler="resolve")
+    parser = argparse.ArgumentParser(
+        description='', conflict_handler="resolve")
     general = parser.add_argument_group("General")
     general.add_argument(
-        '-h', '--help',\
-        action='help',\
+        '-h', '--help',
+        action='help',
         help="Shows the help.")
     general.add_argument(
-        '-v', '--version',\
-        action='version',\
-        version=version,\
+        '-v', '--version',
+        action='version',
+        version=version,
         help="Shows the version.")
     authentication = parser.add_argument_group("Authentication")
     authentication.add_argument(
-        '-c', '--cookies',\
-        dest='cookies',\
-        type=str,\
-        help="Cookies to authenticate",metavar='')
-    
+        '-c', '--cookies',
+        dest='cookies',
+        type=str,
+        help="Cookies to authenticate", metavar='')
+
     authentication.add_argument(
-        '-k', '--cron',\
-        dest='cron',\
-        action='store_true',\
+        '-k', '--cron',
+        dest='cron',
+        action='store_true',
         help="Added support to create a cron job/task")
 
     authentication.add_argument(
-        '-p', '--paid',\
-        dest='paid',\
-        action='store_true',\
+        '-p', '--paid',
+        dest='paid',
+        action='store_true',
         help="Enrol to only paid courses")
-    
+
     try:
         args = parser.parse_args()
-        ip = ".".join(map(str, (random.randint(0, 255) 
+        ip = ".".join(map(str, (random.randint(0, 255)
                                 for _ in range(4))))
         global paid_only
         if args.paid:
             paid_only = True
         else:
             paid_only = False
-        
+
         if args.cookies:
-            print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fg +'Trying to login with cookies! \n')
+            print('\n' + fc + sd + '[' + fm + sb + '*' + fc +
+                  sd + '] ' + fg + 'Trying to login with cookies! \n')
             time.sleep(0.8)
             cookies_file = Path(args.cookies)
             if cookies_file.exists():
@@ -251,11 +285,12 @@ def main():
                     fp_toks = fp.read().split('||')
                     access_token = fp_toks[0]
                     client_id = fp_toks[1]
-                    print(fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fg +'Login Successful! \n')
+                    print(fc + sd + '[' + fm + sb + '*' + fc +
+                          sd + '] ' + fg + 'Login Successful! \n')
                 except Exception as z:
                     print(fr + 'cookie file is not in right format')
                     exit()
-                
+
                 csrftoken = ''
                 cookies = cookiejar(client_id, access_token)
                 head = {
@@ -289,25 +324,30 @@ def main():
                     'origin': 'https://www.udemy.com',
                     'referer': 'https://www.udemy.com/'
                 }
-                print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fg +'Auto Login Successful! \n')
+                print('\n' + fc + sd + '[' + fm + sb + '*' + fc +
+                      sd + '] ' + fg + 'Auto Login Successful! \n')
 
             except Exception as e:
-                print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fr + 'Make sure you are logged in to udemy.com in chrome browser')
+                print('\n' + fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' +
+                      fr + 'Make sure you are logged in to udemy.com in chrome browser')
                 access_token = ''
         if access_token != '':
             time.sleep(0.8)
-            print(fc + sd + '[' + fm + sb + '*' + fc + sd + '] ' + fw + 'Websites Available: ')
+            print(fc + sd + '[' + fm + sb + '*' + fc +
+                  sd + '] ' + fw + 'Websites Available: ')
             bad_colors = ['BLACK', 'WHITE', 'LIGHTBLACK_EX', 'RESET']
             codes = vars(colorama.Fore)
-            colors = [codes[color] for color in codes if color not in bad_colors]
+            colors = [codes[color]
+                      for color in codes if color not in bad_colors]
             for site in total_sites:
                 print(random.choice(colors) + site)
-            
+
             try:
                 if args.cron:
                     input_1 = 'y'
                 else:
-                    print('\n' + fc + sd + '----' + fm + sb + '>>' + fb + ' Want to see available coupons (INPUT "n") OR subscribe to all available courses automatically (input "y"): ', end='')
+                    print('\n' + fc + sd + '----' + fm + sb + '>>' + fb +
+                          ' Want to see available coupons (INPUT "n") OR subscribe to all available courses automatically (input "y"): ', end='')
                     input_1 = input()
                     more = ''
             except:
@@ -319,95 +359,120 @@ def main():
                 for site_index, site in enumerate(total_sites):
                     if site == 'Learn Viral':
                         limit = 10
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Learn Viral ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Learn Viral ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = learnviral(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Discudemy':
                         limit = 4
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Discudemy ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Discudemy ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = discudemy(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Udemy Freebies':
                         limit = 4
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Udemy Freebies ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Udemy Freebies ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = udemy_freebies(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Udemy Coupons':
                         limit = 4
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Udemy Coupons ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Udemy Coupons ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = udemy_coupons_me(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Real Discount':
                         limit = 4
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Real Discount ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Real Discount ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = real_disc(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Tricks Info':
                         limit = 6
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Tricks Info ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Tricks Info ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = tricksinfo(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Free Web Cart':
                         limit = 7
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Free Web Cart ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Free Web Cart ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = freewebcart(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Course Mania':
                         limit = 1
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Course Mania ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Course Mania ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = course_mania(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Help Covid':
                         limit = 1
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Help Covid ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Help Covid ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = helpcovid(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Jojo Coupons':
                         limit = 4
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Jojo Coupons ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Jojo Coupons ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = jojocoupons(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
                     if site == 'Online Tutorials':
                         limit = 4
-                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +' Online Tutorials ' + fm + sb + '<<' + fc + sd + '-------\n')
+                        print('\n' + fc + sd + '-------' + fm + sb + '>>' + fb +
+                              ' Online Tutorials ' + fm + sb + '<<' + fc + sd + '-------\n')
                         while d <= limit:
                             list_st = onlinetutorials(d)
-                            site = process(list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
+                            site = process(
+                                list_st, d, limit, site_index, cookies, access_token, csrftoken, head)
                             d += 1
             elif input_1 == 'y':
                 global count
                 count = 0
                 for index, items in enumerate(func_list):
-                    print('\n' + fc + sd + '-------' + fm + sb + '>> ' + fb + total_sites[index] + fm + sb + ' <<' + fc + sd + '-------\n')
+                    print('\n' + fc + sd + '-------' + fm + sb + '>> ' + fb +
+                          total_sites[index] + fm + sb + ' <<' + fc + sd + '-------\n')
                     limit = site_range[index]
                     for d in range(1, limit):
                         list_st = items(d)
-                        auto_add(list_st, cookies, access_token, csrftoken, head)
+                        auto_add(list_st, cookies,
+                                 access_token, csrftoken, head)
         else:
             print('Make sure you are logged in to udemy.com in chrome browser')
-    except Exception as e :
+    except Exception as e:
         print(e)
         exit('\nunknown error')
+
 
 if __name__ == '__main__':
     main()
