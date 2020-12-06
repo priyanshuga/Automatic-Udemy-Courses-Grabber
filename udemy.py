@@ -19,7 +19,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 func_list = [
     lambda page: discudemy(page),
     lambda page: udemy_freebies(page),
-    #lambda page: udemy_coupons_me(page),
+    lambda page: udemy_coupons_me(page),
     #lambda page: real_disc(page),
     #lambda page: tricksinfo(page),
     #lambda page: freewebcart(page),
@@ -332,6 +332,9 @@ def main():
                       fr + 'Make sure you are logged in to udemy.com in chrome browser')
                 access_token = ''
         if access_token != '':
+            time.sleep(0.8)
+            print(fc + sd + '[' + fm + sb + '*' + fc +
+                  sd + '] ' + fy + 'Type "python udemy.py --help" to check more functions' + "\n")
             time.sleep(0.8)
             print(fc + sd + '[' + fm + sb + '*' + fc +
                   sd + '] ' + fw + 'Websites Available: ')
